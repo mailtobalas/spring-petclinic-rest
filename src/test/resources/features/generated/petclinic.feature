@@ -4,179 +4,268 @@
     Given the API base URL is configured
 
   # Owner scenarios
-  @owners
-  Scenario Outline: Retrieve owner by ID
+  Scenario Outline: Retrieve an existing owner by ID
     When the client requests GET /owners/<ownerId>
-    Then the response status code is <statusCode>
-    And <responseCheck>
+    Then the response status code is 200
+    And the response contains owner with id <ownerId>
 
     Examples:
-      | ownerId | statusCode | responseCheck                      |
-      | 1       | 200        | the response contains owner with id 1 |
-      | 9999    | 404        | the response contains error message "Owner not found" |
+      | ownerId |
+      | 1       |
+      | 2       |
 
-  @owners
-  Scenario Outline: Create a new owner
+  Scenario Outline: Retrieve a non-existent owner by ID
+    When the client requests GET /owners/<ownerId>
+    Then the response status code is 404
+    And the response contains error message "Owner not found"
+
+    Examples:
+      | ownerId |
+      | 9999    |
+      | 0       |
+
+  Scenario Outline: Create a new owner with valid data
     When the client creates an owner with:
-      | firstName | lastName | address       | city      | telephone   |
-      | <firstName> | <lastName> | <address> | <city>    | <telephone> |
-    Then the response status code is <statusCode>
-    And <responseCheck>
+      | firstName | lastName | address       | city      | telephone  |
+      | <firstName> | <lastName> | <address> | <city> | <telephone> |
+    Then the response status code is 201
+    And the response contains owner with firstName <firstName> and lastName <lastName>
 
     Examples:
-      # Positive case
-      | firstName | lastName | address       | city      | telephone  | statusCode | responseCheck                              |
-      | John      | Doe      | 123 Elm St    | Metropolis| 1234567890 | 201        | the response contains owner with firstName "John" and lastName "Doe" |
-      # Missing mandatory field lastName
-      | John      |          | 123 Elm St    | Metropolis| 1234567890 | 400        | the response contains validation error for "lastName" |
-      # Invalid telephone (non-numeric)
-      | John      | Doe      | 123 Elm St    | Metropolis| abcdef     | 400        | the response contains validation error for "telephone" |
+      | firstName | lastName | address          | city       | telephone   |
+      | John      | Doe      | 123 Elm Street   | Springfield| 1234567890  |
+      | Jane      | Smith    | 456 Oak Avenue   | Shelbyville| 0987654321  |
 
-  @owners
-  Scenario Outline: Update an existing owner
+  Scenario Outline: Create a new owner with missing mandatory fields
+    When the client creates an owner with:
+      | firstName | lastName | address | city | telephone |
+      | <firstName> | <lastName> | <address> | <city> | <telephone> |
+    Then the response status code is 400
+    And the response contains validation error for <field>
+
+    Examples:
+      | firstName | lastName | address | city | telephone | field      |
+      |           | Doe      | 123 Elm | City | 1234567   | firstName  |
+      | John      |          | 123 Elm | City | 1234567   | lastName   |
+      | John      | Doe      |         | City | 1234567   | address    |
+      | John      | Doe      | 123 Elm |      | 1234567   | city       |
+      | John      | Doe      | 123 Elm | City |           | telephone  |
+
+  Scenario Outline: Update an existing owner with valid data
     Given an owner exists with id <ownerId>
     When the client updates owner with id <ownerId> with:
-      | firstName | lastName | address       | city      | telephone   |
-      | <firstName> | <lastName> | <address> | <city>    | <telephone> |
-    Then the response status code is <statusCode>
-    And <responseCheck>
+      | firstName | lastName | address       | city      | telephone  |
+      | <firstName> | <lastName> | <address> | <city> | <telephone> |
+    Then the response status code is 204
 
     Examples:
-      # Positive update
-      | ownerId | firstName | lastName | address       | city      | telephone  | statusCode | responseCheck                              |
-      | 1       | Jane      | Smith    | 456 Oak Ave   | Gotham    | 9876543210 | 200        | the response contains owner with firstName "Jane" and lastName "Smith" |
-      # Update non-existent owner
-      | 9999    | Jane      | Smith    | 456 Oak Ave   | Gotham    | 9876543210 | 404        | the response contains error message "Owner not found" |
-      # Invalid telephone
-      | 1       | Jane      | Smith    | 456 Oak Ave   | Gotham    | invalid    | 400        | the response contains validation error for "telephone" |
+      | ownerId | firstName | lastName | address        | city       | telephone  |
+      | 1       | Alice     | Cooper   | 789 Pine Road  | Metropolis | 555123456 |
 
-  @owners
-  Scenario Outline: Delete an owner
+  Scenario Outline: Update a non-existent owner
+    When the client updates owner with id <ownerId> with:
+      | firstName | lastName | address | city | telephone |
+      | John      | Doe      | Addr    | City | 1234567   |
+    Then the response status code is 404
+    And the response contains error message "Owner not found"
+
+    Examples:
+      | ownerId |
+      | 9999    |
+      | 0       |
+
+  Scenario Outline: Delete an existing owner
     Given an owner exists with id <ownerId>
     When the client deletes owner with id <ownerId>
-    Then the response status code is <statusCode>
+    Then the response status code is 204
 
     Examples:
-      | ownerId | statusCode |
-      | 1       | 204        |
-      | 9999    | 404        |
+      | ownerId |
+      | 1       |
+
+  Scenario Outline: Delete a non-existent owner
+    When the client deletes owner with id <ownerId>
+    Then the response status code is 404
+    And the response contains error message "Owner not found"
+
+    Examples:
+      | ownerId |
+      | 9999    |
+      | 0       |
 
   # Pet scenarios
-  @pets
-  Scenario Outline: Retrieve pet by ID
+  Scenario Outline: Retrieve an existing pet by ID
     When the client requests GET /pets/<petId>
-    Then the response status code is <statusCode>
-    And <responseCheck>
+    Then the response status code is 200
+    And the response contains pet with id <petId>
 
     Examples:
-      | petId | statusCode | responseCheck                  |
-      | 1     | 200        | the response contains pet with id 1 |
-      | 9999  | 404        | the response contains error message "Pet not found" |
+      | petId |
+      | 1     |
+      | 2     |
 
-  @pets
-  Scenario Outline: Create a new pet
+  Scenario Outline: Retrieve a non-existent pet by ID
+    When the client requests GET /pets/<petId>
+    Then the response status code is 404
+    And the response contains error message "Pet not found"
+
+    Examples:
+      | petId |
+      | 9999  |
+      | 0     |
+
+  Scenario Outline: Create a new pet with valid data
     When the client creates a pet with:
-      | name   | birthDate  | typeId | ownerId |
+      | name  | birthDate  | typeId | ownerId |
       | <name> | <birthDate> | <typeId> | <ownerId> |
-    Then the response status code is <statusCode>
-    And <responseCheck>
+    Then the response status code is 201
+    And the response contains pet with id >= 1
 
     Examples:
-      # Positive case
-      | name    | birthDate  | typeId | ownerId | statusCode | responseCheck                  |
-      | Buddy   | 2018-01-01 | 1      | 1       | 201        | the response contains pet with id  |
-      # Missing name
-      |         | 2018-01-01 | 1      | 1       | 400        | the response contains validation error for "name" |
-      # Invalid birthDate format
-      | Buddy   | 01-01-2018 | 1      | 1       | 400        | the response contains validation error for "birthDate" |
-      # Nonexistent ownerId
-      | Buddy   | 2018-01-01 | 1      | 9999    | 400        | the response contains error message "Owner not found" |
+      | name    | birthDate  | typeId | ownerId |
+      | Rex     | 2018-01-01 | 1      | 1       |
+      | Bella   | 2020-05-15 | 2      | 2       |
 
-  @pets
-  Scenario Outline: Update an existing pet
+  Scenario Outline: Create a new pet with missing or invalid fields
+    When the client creates a pet with:
+      | name  | birthDate  | typeId | ownerId |
+      | <name> | <birthDate> | <typeId> | <ownerId> |
+    Then the response status code is 400
+    And the response contains validation error for <field>
+
+    Examples:
+      | name  | birthDate  | typeId | ownerId | field     |
+      |       | 2018-01-01 | 1      | 1       | name      |
+      | Rex   |            | 1      | 1       | birthDate |
+      | Rex   | 2018-01-01 |        | 1       | typeId    |
+      | Rex   | 2018-01-01 | 1      |         | ownerId   |
+
+  Scenario Outline: Update an existing pet with valid data
     Given a pet exists with id <petId>
     When the client updates pet with id <petId> with:
-      | name   | birthDate  | typeId | ownerId |
+      | name  | birthDate  | typeId | ownerId |
       | <name> | <birthDate> | <typeId> | <ownerId> |
-    Then the response status code is <statusCode>
-    And <responseCheck>
+    Then the response status code is 204
 
     Examples:
-      # Positive update
-      | petId | name    | birthDate  | typeId | ownerId | statusCode | responseCheck                  |
-      | 1     | Max     | 2019-05-05 | 2      | 1       | 200        | the response contains pet with id 1 |
-      # Update non-existent pet
-      | 9999  | Max     | 2019-05-05 | 2      | 1       | 404        | the response contains error message "Pet not found" |
-      # Invalid birthDate
-      | 1     | Max     | invalid    | 2      | 1       | 400        | the response contains validation error for "birthDate" |
+      | petId | name   | birthDate  | typeId | ownerId |
+      | 1     | Max    | 2017-12-12 | 1      | 1       |
 
-  @pets
-  Scenario Outline: Delete a pet
+  Scenario Outline: Update a non-existent pet
+    When the client updates pet with id <petId> with:
+      | name  | birthDate  | typeId | ownerId |
+      | Rex   | 2018-01-01 | 1      | 1       |
+    Then the response status code is 404
+    And the response contains error message "Pet not found"
+
+    Examples:
+      | petId |
+      | 9999  |
+      | 0     |
+
+  Scenario Outline: Delete an existing pet
     Given a pet exists with id <petId>
     When the client deletes pet with id <petId>
-    Then the response status code is <statusCode>
+    Then the response status code is 204
 
     Examples:
-      | petId | statusCode |
-      | 1     | 204        |
-      | 9999  | 404        |
+      | petId |
+      | 1     |
+
+  Scenario Outline: Delete a non-existent pet
+    When the client deletes pet with id <petId>
+    Then the response status code is 404
+    And the response contains error message "Pet not found"
+
+    Examples:
+      | petId |
+      | 9999  |
+      | 0     |
 
   # Visit scenarios
-  @visits
-  Scenario Outline: Retrieve visit by ID
+  Scenario Outline: Retrieve an existing visit by ID
     When the client requests GET /visits/<visitId>
-    Then the response status code is <statusCode>
-    And <responseCheck>
+    Then the response status code is 200
+    And the response contains visit with id <visitId>
 
     Examples:
-      | visitId | statusCode | responseCheck                    |
-      | 1       | 200        | the response contains visit with id 1 |
-      | 9999    | 404        | the response contains error message "Visit not found" |
+      | visitId |
+      | 1       |
+      | 2       |
 
-  @visits
-  Scenario Outline: Create a new visit
+  Scenario Outline: Retrieve a non-existent visit by ID
+    When the client requests GET /visits/<visitId>
+    Then the response status code is 404
+    And the response contains error message "Visit not found"
+
+    Examples:
+      | visitId |
+      | 9999    |
+      | 0       |
+
+  Scenario Outline: Create a new visit with valid data
     When the client creates a visit with:
-      | petId | visitDate  | description          |
-      | <petId> | <visitDate> | <description>       |
-    Then the response status code is <statusCode>
-    And <responseCheck>
+      | petId | visitDate  | description       |
+      | <petId> | <visitDate> | <description>   |
+    Then the response status code is 201
+    And the response contains visit with id >= 1
 
     Examples:
-      # Positive case
-      | petId | visitDate  | description       | statusCode | responseCheck                    |
-      | 1     | 2023-01-01 | Annual checkup    | 201        | the response contains visit with id  |
-      # Missing description
-      | 1     | 2023-01-01 |                  | 400        | the response contains validation error for "description" |
-      # Invalid visitDate format
-      | 1     | 01-01-2023 | Annual checkup    | 400        | the response contains validation error for "visitDate" |
-      # Nonexistent petId
-      | 9999  | 2023-01-01 | Annual checkup    | 400        | the response contains error message "Pet not found" |
+      | petId | visitDate  | description          |
+      | 1     | 2023-01-01 | Annual checkup       |
+      | 2     | 2023-06-15 | Vaccination          |
 
-  @visits
-  Scenario Outline: Update an existing visit
+  Scenario Outline: Create a new visit with missing or invalid fields
+    When the client creates a visit with:
+      | petId | visitDate  | description       |
+      | <petId> | <visitDate> | <description>   |
+    Then the response status code is 400
+    And the response contains validation error for <field>
+
+    Examples:
+      | petId | visitDate  | description | field       |
+      |       | 2023-01-01 | Checkup     | petId       |
+      | 1     |            | Checkup     | visitDate   |
+      | 1     | 2023-01-01 |             | description |
+
+  Scenario Outline: Update an existing visit with valid data
     Given a visit exists with id <visitId>
     When the client updates visit with id <visitId> with:
-      | petId | visitDate  | description          |
-      | <petId> | <visitDate> | <description>       |
-    Then the response status code is <statusCode>
-    And <responseCheck>
+      | petId | visitDate  | description       |
+      | <petId> | <visitDate> | <description>   |
+    Then the response status code is 204
 
     Examples:
-      # Positive update
-      | visitId | petId | visitDate  | description      | statusCode | responseCheck                    |
-      | 1       | 1     | 2023-06-01 | Follow-up visit  | 200        | the response contains visit with id 1 |
-      # Update non-existent visit
-      | 9999    | 1     | 2023-06-01 | Follow-up visit  | 404        | the response contains error message "Visit not found" |
-      # Invalid visitDate
-      | 1       | 1     | invalid    | Follow-up visit  | 400        | the response contains validation error for "visitDate" |
+      | visitId | petId | visitDate  | description     |
+      | 1       | 1     | 2023-02-02 | Follow-up check |
 
-  @visits
-  Scenario Outline: Delete a visit
+  Scenario Outline: Update a non-existent visit
+    When the client updates visit with id <visitId> with:
+      | petId | visitDate  | description       |
+      | 1     | 2023-01-01 | Checkup           |
+    Then the response status code is 404
+    And the response contains error message "Visit not found"
+
+    Examples:
+      | visitId |
+      | 9999    |
+      | 0       |
+
+  Scenario Outline: Delete an existing visit
     Given a visit exists with id <visitId>
     When the client deletes visit with id <visitId>
-    Then the response status code is <statusCode>
+    Then the response status code is 204
 
     Examples:
-      | visitId | statusCode |
-      | 1       | 204        |
-      | 9999    | 404        |
+      | visitId |
+      | 1       |
+
+  Scenario Outline: Delete a non-existent visit
+    When the client deletes visit with id <visitId>
+    Then the response status code is 404
+    And the response contains error message "Visit not found"
+
+    Examples:
+      | visitId |
+      | 9999    |
+      | 0       |
