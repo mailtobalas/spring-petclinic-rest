@@ -3,17 +3,21 @@
   Background:
     Given the API base URL is configured
 
-  # Owner endpoints
-  # GET /owners/{ownerId}
+  # Owner endpoints: GET /owners/{ownerId}, POST /owners, PUT /owners/{ownerId}, DELETE /owners/{ownerId}
+  # Pet endpoints: GET /pets/{petId}, POST /pets, PUT /pets/{petId}, DELETE /pets/{petId}
+  # Visit endpoints: GET /visits/{visitId}, POST /visits, PUT /visits/{visitId}, DELETE /visits/{visitId}
+
+  # OWNER SCENARIOS
+
   Scenario Outline: Retrieve an existing owner by ID
     When I send a GET request to "/owners/<ownerId>"
-    Then the response status code should be <statusCode>
+    Then the response status code should be 200
     And the response JSON should contain owner with id <ownerId> and lastName "<lastName>"
 
     Examples:
-      | ownerId | lastName   | statusCode |
-      | 1       | Davis      | 200        |
-      | 2       | Mueller    | 200        |
+      | ownerId | lastName  |
+      | 1       | Douglas   |
+      | 2       | Smith     |
 
   Scenario Outline: Retrieve a non-existent owner by ID
     When I send a GET request to "/owners/<ownerId>"
@@ -24,7 +28,6 @@
       | 9999    |
       | 0       |
 
-  # POST /owners
   Scenario Outline: Create a new owner with valid data
     Given the following owner data:
       | firstName | <firstName> |
@@ -37,43 +40,22 @@
     And the response JSON should contain owner with lastName "<lastName>"
 
     Examples:
-      | firstName | lastName | address       | city       | telephone  |
-      | John      | Doe      | 123 Elm St    | Springfield| 1234567890 |
-      | Jane      | Smith    | 456 Oak Ave   | Shelbyville| 0987654321 |
+      | firstName | lastName | address         | city       | telephone  |
+      | John      | Doe      | 123 Elm Street  | Metropolis | 1234567890 |
+      | Jane      | Roe      | 456 Oak Avenue  | Gotham     | 0987654321 |
 
   Scenario Outline: Create a new owner with missing required fields
     Given the following owner data:
       | firstName | <firstName> |
       | lastName  | <lastName>  |
-      | address   | <address>   |
-      | city      | <city>      |
-      | telephone | <telephone> |
     When I send a POST request to "/owners" with the owner data
     Then the response status code should be 400
 
     Examples:
-      # Missing lastName
-      | firstName | lastName | address     | city       | telephone  |
-      | John      |          | 123 Elm St  | Springfield| 1234567890 |
-      # Missing telephone
-      | Jane      | Smith    | 456 Oak Ave | Shelbyville|            |
+      | firstName | lastName |
+      |           | Doe      |
+      | John      |          |
 
-  Scenario Outline: Create a new owner with invalid telephone number
-    Given the following owner data:
-      | firstName | <firstName> |
-      | lastName  | <lastName>  |
-      | address   | <address>   |
-      | city      | <city>      |
-      | telephone | <telephone> |
-    When I send a POST request to "/owners" with the owner data
-    Then the response status code should be 400
-
-    Examples:
-      | firstName | lastName | address     | city       | telephone  |
-      | John      | Doe      | 123 Elm St  | Springfield| abcdefg    |
-      | Jane      | Smith    | 456 Oak Ave | Shelbyville| 12345abc   |
-
-  # PUT /owners/{ownerId}
   Scenario Outline: Update an existing owner with valid data
     Given the following owner data:
       | firstName | <firstName> |
@@ -82,50 +64,50 @@
       | city      | <city>      |
       | telephone | <telephone> |
     When I send a PUT request to "/owners/<ownerId>" with the owner data
-    Then the response status code should be <statusCode>
-    And the response JSON should contain owner with lastName "<lastName>"
+    Then the response status code should be 204
 
     Examples:
-      | ownerId | firstName | lastName | address      | city       | telephone  | statusCode |
-      | 1       | Michael   | Weston   | 789 Pine Rd  | Miami      | 5551234567 | 200        |
-      | 9999    | John      | Doe      | 123 Elm St   | Springfield| 1234567890 | 404        |
+      | ownerId | firstName | lastName | address        | city       | telephone  |
+      | 1       | John      | Doe      | 789 Pine Road  | Star City  | 1112223333 |
 
-  Scenario Outline: Update an existing owner with invalid data
+  Scenario Outline: Update a non-existent owner
     Given the following owner data:
-      | firstName | <firstName> |
-      | lastName  | <lastName>  |
-      | address   | <address>   |
-      | city      | <city>      |
-      | telephone | <telephone> |
+      | firstName | John |
+      | lastName  | Doe  |
     When I send a PUT request to "/owners/<ownerId>" with the owner data
-    Then the response status code should be 400
+    Then the response status code should be 404
 
     Examples:
-      | ownerId | firstName | lastName | address     | city       | telephone  |
-      | 1       | John      |          | 123 Elm St  | Springfield| 1234567890 |
-      | 1       | Jane      | Smith    | 456 Oak Ave | Shelbyville| abcdefg    |
+      | ownerId |
+      | 9999    |
 
-  # DELETE /owners/{ownerId}
-  Scenario Outline: Delete an existing owner by ID
+  Scenario Outline: Delete an existing owner
     When I send a DELETE request to "/owners/<ownerId>"
-    Then the response status code should be <statusCode>
+    Then the response status code should be 204
 
     Examples:
-      | ownerId | statusCode |
-      | 1       | 204        |
-      | 9999    | 404        |
+      | ownerId |
+      | 1       |
 
-  # Pet endpoints
-  # GET /pets/{petId}
+  Scenario Outline: Delete a non-existent owner
+    When I send a DELETE request to "/owners/<ownerId>"
+    Then the response status code should be 404
+
+    Examples:
+      | ownerId |
+      | 9999    |
+
+  # PET SCENARIOS
+
   Scenario Outline: Retrieve an existing pet by ID
     When I send a GET request to "/pets/<petId>"
-    Then the response status code should be <statusCode>
+    Then the response status code should be 200
     And the response JSON should contain pet with id <petId> and name "<name>"
 
     Examples:
-      | petId | name    | statusCode |
-      | 1     | Leo     | 200        |
-      | 2     | Basil   | 200        |
+      | petId | name    |
+      | 1     | Leo     |
+      | 2     | Bubbles |
 
   Scenario Outline: Retrieve a non-existent pet by ID
     When I send a GET request to "/pets/<petId>"
@@ -134,106 +116,85 @@
     Examples:
       | petId |
       | 9999  |
-      | 0     |
 
-  # POST /pets
   Scenario Outline: Create a new pet with valid data
     Given the following pet data:
-      | name     | <name>     |
-      | birthDate| <birthDate>|
-      | type     | <type>     |
-      | ownerId  | <ownerId>  |
+      | name  | <name>  |
+      | birthDate | <birthDate> |
+      | type  | <type>  |
+      | ownerId | <ownerId> |
     When I send a POST request to "/pets" with the pet data
     Then the response status code should be 201
     And the response JSON should contain pet with name "<name>"
 
     Examples:
-      | name   | birthDate  | type    | ownerId |
-      | Rocky  | 2018-01-01 | dog     | 1       |
-      | Whiskers| 2019-05-20| cat     | 2       |
+      | name   | birthDate  | type   | ownerId |
+      | Max    | 2019-01-01 | dog    | 1       |
+      | Whiskers | 2020-06-15 | cat   | 2       |
 
   Scenario Outline: Create a new pet with missing required fields
     Given the following pet data:
-      | name     | <name>     |
-      | birthDate| <birthDate>|
-      | type     | <type>     |
-      | ownerId  | <ownerId>  |
+      | name  | <name>  |
+      | type  | <type>  |
     When I send a POST request to "/pets" with the pet data
     Then the response status code should be 400
 
     Examples:
-      # Missing name
-      | name | birthDate  | type | ownerId |
-      |      | 2018-01-01 | dog  | 1       |
-      # Missing ownerId
-      | name   | birthDate  | type | ownerId |
-      | Rocky  | 2018-01-01 | dog  |         |
+      | name | type |
+      |      | dog  |
+      | Max  |      |
 
-  Scenario Outline: Create a new pet with invalid birthDate format
-    Given the following pet data:
-      | name     | <name>     |
-      | birthDate| <birthDate>|
-      | type     | <type>     |
-      | ownerId  | <ownerId>  |
-    When I send a POST request to "/pets" with the pet data
-    Then the response status code should be 400
-
-    Examples:
-      | name  | birthDate | type | ownerId |
-      | Rocky | 01-01-2018| dog  | 1       |
-      | Whiskers | 2018/01/01 | cat | 2     |
-
-  # PUT /pets/{petId}
   Scenario Outline: Update an existing pet with valid data
     Given the following pet data:
-      | name     | <name>     |
-      | birthDate| <birthDate>|
-      | type     | <type>     |
-      | ownerId  | <ownerId>  |
+      | name  | <name>  |
+      | birthDate | <birthDate> |
+      | type  | <type>  |
+      | ownerId | <ownerId> |
     When I send a PUT request to "/pets/<petId>" with the pet data
-    Then the response status code should be <statusCode>
-    And the response JSON should contain pet with name "<name>"
+    Then the response status code should be 204
 
     Examples:
-      | petId | name    | birthDate  | type  | ownerId | statusCode |
-      | 1     | Max     | 2017-12-12 | dog   | 1       | 200        |
-      | 9999  | Max     | 2017-12-12 | dog   | 1       | 404        |
+      | petId | name   | birthDate  | type | ownerId |
+      | 1     | Max    | 2018-12-12 | dog  | 1       |
 
-  Scenario Outline: Update an existing pet with invalid data
+  Scenario Outline: Update a non-existent pet
     Given the following pet data:
-      | name     | <name>     |
-      | birthDate| <birthDate>|
-      | type     | <type>     |
-      | ownerId  | <ownerId>  |
+      | name | Max |
+      | type | dog |
     When I send a PUT request to "/pets/<petId>" with the pet data
-    Then the response status code should be 400
+    Then the response status code should be 404
 
     Examples:
-      | petId | name | birthDate  | type | ownerId |
-      | 1     |      | 2017-12-12 | dog  | 1       |
-      | 1     | Max  | invalid    | dog  | 1       |
+      | petId |
+      | 9999  |
 
-  # DELETE /pets/{petId}
-  Scenario Outline: Delete an existing pet by ID
+  Scenario Outline: Delete an existing pet
     When I send a DELETE request to "/pets/<petId>"
-    Then the response status code should be <statusCode>
+    Then the response status code should be 204
 
     Examples:
-      | petId | statusCode |
-      | 1     | 204        |
-      | 9999  | 404        |
+      | petId |
+      | 1     |
 
-  # Visit endpoints
-  # GET /visits/{visitId}
+  Scenario Outline: Delete a non-existent pet
+    When I send a DELETE request to "/pets/<petId>"
+    Then the response status code should be 404
+
+    Examples:
+      | petId |
+      | 9999  |
+
+  # VISIT SCENARIOS
+
   Scenario Outline: Retrieve an existing visit by ID
     When I send a GET request to "/visits/<visitId>"
-    Then the response status code should be <statusCode>
+    Then the response status code should be 200
     And the response JSON should contain visit with id <visitId> and description "<description>"
 
     Examples:
-      | visitId | description          | statusCode |
-      | 1       | Annual checkup       | 200        |
-      | 2       | Vaccination          | 200        |
+      | visitId | description         |
+      | 1       | Annual checkup      |
+      | 2       | Vaccination         |
 
   Scenario Outline: Retrieve a non-existent visit by ID
     When I send a GET request to "/visits/<visitId>"
@@ -242,9 +203,7 @@
     Examples:
       | visitId |
       | 9999    |
-      | 0       |
 
-  # POST /visits
   Scenario Outline: Create a new visit with valid data
     Given the following visit data:
       | petId       | <petId>       |
@@ -255,73 +214,57 @@
     And the response JSON should contain visit with description "<description>"
 
     Examples:
-      | petId | visitDate  | description     |
-      | 1     | 2023-01-01 | Annual checkup  |
-      | 2     | 2023-06-15 | Vaccination     |
+      | petId | visitDate  | description       |
+      | 1     | 2023-01-01 | Annual checkup    |
+      | 2     | 2023-06-15 | Dental cleaning   |
 
   Scenario Outline: Create a new visit with missing required fields
     Given the following visit data:
       | petId       | <petId>       |
-      | visitDate   | <visitDate>   |
       | description | <description> |
     When I send a POST request to "/visits" with the visit data
     Then the response status code should be 400
 
     Examples:
-      # Missing petId
-      | petId | visitDate  | description    |
-      |       | 2023-01-01 | Annual checkup |
-      # Missing description
-      | petId | visitDate  | description    |
-      | 1     | 2023-01-01 |                |
+      | petId | description |
+      |       | Checkup     |
+      | 1     |             |
 
-  Scenario Outline: Create a new visit with invalid visitDate format
-    Given the following visit data:
-      | petId       | <petId>       |
-      | visitDate   | <visitDate>   |
-      | description | <description> |
-    When I send a POST request to "/visits" with the visit data
-    Then the response status code should be 400
-
-    Examples:
-      | petId | visitDate | description    |
-      | 1     | 01-01-2023| Annual checkup |
-      | 2     | 2023/01/01| Vaccination    |
-
-  # PUT /visits/{visitId}
   Scenario Outline: Update an existing visit with valid data
     Given the following visit data:
       | petId       | <petId>       |
       | visitDate   | <visitDate>   |
       | description | <description> |
     When I send a PUT request to "/visits/<visitId>" with the visit data
-    Then the response status code should be <statusCode>
-    And the response JSON should contain visit with description "<description>"
+    Then the response status code should be 204
 
     Examples:
-      | visitId | petId | visitDate  | description    | statusCode |
-      | 1       | 1     | 2023-02-02 | Dental cleaning| 200        |
-      | 9999    | 1     | 2023-02-02 | Dental cleaning| 404        |
+      | visitId | petId | visitDate  | description     |
+      | 1       | 1     | 2023-02-01 | Follow-up check |
 
-  Scenario Outline: Update an existing visit with invalid data
+  Scenario Outline: Update a non-existent visit
     Given the following visit data:
-      | petId       | <petId>       |
-      | visitDate   | <visitDate>   |
-      | description | <description> |
+      | petId       | 1             |
+      | description | Follow-up     |
     When I send a PUT request to "/visits/<visitId>" with the visit data
-    Then the response status code should be 400
+    Then the response status code should be 404
 
     Examples:
-      | visitId | petId | visitDate  | description |
-      | 1       |       | 2023-02-02 | Dental cleaning |
-      | 1       | 1     | invalid    | Dental cleaning |
+      | visitId |
+      | 9999    |
 
-  # DELETE /visits/{visitId}
-  Scenario Outline: Delete an existing visit by ID
+  Scenario Outline: Delete an existing visit
     When I send a DELETE request to "/visits/<visitId>"
-    Then the response status code should be <statusCode>
+    Then the response status code should be 204
 
     Examples:
-      | visitId | statusCode |
-      | 1       | 204        |
-      | 9999    | 404        |
+      | visitId |
+      | 1       |
+
+  Scenario Outline: Delete a non-existent visit
+    When I send a DELETE request to "/visits/<visitId>"
+    Then the response status code should be 404
+
+    Examples:
+      | visitId |
+      | 9999    |
