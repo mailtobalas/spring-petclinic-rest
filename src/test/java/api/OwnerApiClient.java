@@ -11,13 +11,12 @@ public class ApiClient {
     private final String baseUrl;
 
     public ApiClient() {
-        // Base URL configurable via system property or environment variable
         String url = System.getProperty("petclinic.api.baseurl");
         if (url == null || url.isEmpty()) {
             url = System.getenv("PETCLINIC_API_BASEURL");
         }
         if (url == null || url.isEmpty()) {
-            url = "http://localhost:9966/petclinic/api"; // default fallback
+            url = "http://localhost:9966/petclinic/api";
         }
         this.baseUrl = url;
     }
