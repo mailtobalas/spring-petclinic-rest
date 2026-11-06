@@ -129,6 +129,13 @@ public class PetclinicStepDefinitions {
         response = apiClient.createPet(requestBody);
     }
 
+    @Then("the response contains pet with id >= {int}")
+    public void the_response_contains_pet_with_id_greater_or_equal(Integer minId) {
+        response.then()
+                .statusCode(anyOf(is(200), is(201)))
+                .body("id", greaterThanOrEqualTo(minId));
+    }
+
     @Given("a pet exists with id {int}")
     public void a_pet_exists_with_id(Integer petId) {
         response = apiClient.getPetById(petId);
@@ -185,6 +192,13 @@ public class PetclinicStepDefinitions {
         requestBody.put("visitDate", data.get("visitDate"));
         requestBody.put("description", data.get("description"));
         response = apiClient.createVisit(requestBody);
+    }
+
+    @Then("the response contains visit with id >= {int}")
+    public void the_response_contains_visit_with_id_greater_or_equal(Integer minId) {
+        response.then()
+                .statusCode(anyOf(is(200), is(201)))
+                .body("id", greaterThanOrEqualTo(minId));
     }
 
     @Given("a visit exists with id {int}")
